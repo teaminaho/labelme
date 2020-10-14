@@ -26,11 +26,16 @@ def main():
     )
     args = parser.parse_args()
 
+    # Ignore output directory existance check
+    '''
     if osp.exists(args.output_dir):
         print("Output directory already exists:", args.output_dir)
         sys.exit(1)
+    '''
+
     os.makedirs(args.output_dir)
     os.makedirs(osp.join(args.output_dir, "JPEGImages"))
+    os.makedirs(osp.join(args.output_dir, "masks"))
     os.makedirs(osp.join(args.output_dir, "SegmentationClass"))
     os.makedirs(osp.join(args.output_dir, "SegmentationClassPNG"))
     if not args.noviz:
@@ -100,6 +105,7 @@ def main():
         imgviz.io.imsave(out_img_file, img)
 
         cls, ins = labelme.utils.shapes_to_label(
+            filename,
             img_shape=img.shape,
             shapes=label_file.shapes,
             label_name_to_value=class_name_to_id,
