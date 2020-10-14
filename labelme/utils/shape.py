@@ -1,6 +1,8 @@
 import math
 import uuid
 
+import os
+import cv2
 import numpy as np
 import PIL.Image
 import PIL.ImageDraw
@@ -48,11 +50,13 @@ def shape_to_mask(
     return mask
 
 
-def shapes_to_label(img_shape, shapes, label_name_to_value):
+def shapes_to_label(filename, img_shape, shapes, label_name_to_value):
+    ''' To deal with separated instance mask, some modification is added to original codes
+    '''
     cls = np.zeros(img_shape[:2], dtype=np.int32)
     ins = np.zeros_like(cls)
     instances = []
-    for shape in shapes:
+    for index, shape in enumerate(shapes):
         points = shape["points"]
         label = shape["label"]
         group_id = shape.get("group_id")
@@ -62,7 +66,6 @@ def shapes_to_label(img_shape, shapes, label_name_to_value):
 
         cls_name = label
         instance = (cls_name, group_id)
-
         if instance not in instances:
             instances.append(instance)
         ins_id = instances.index(instance) + 1
@@ -72,6 +75,10 @@ def shapes_to_label(img_shape, shapes, label_name_to_value):
         cls[mask] = cls_id
         ins[mask] = ins_id
 
+        mask = np.array(mask, dtype="uint8")
+        mask[mask > 0] = 255
+        # mask.save("masks/" + filename.split(os.sep)[-1][:-4] + "_" + str(index) + ".png")
+        cv2.imwrite("data_dataset_voc" + os.sep + "masks/" + filename.split(os.sep)[-1][:-5] + "_" + str(index) + ".png", mask)
     return cls, ins
 
 
